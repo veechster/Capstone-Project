@@ -17,11 +17,11 @@ int main()
 
     while(1)//Create infinte loop for live streaming
 	{
-		overlord.stream.read(frame);
+		overlord.stream.read(frame);//get a frame
 
 		overlord.search(frame,frame);//process the frame looking for targets
 
-		imshow("Camera_Output", frame);
+		imshow("Camera_Output", frame);//show the result
 
         overlord.targeting.key = cvWaitKey(30);//Capture Keyboard stroke
         if (char(overlord.targeting.key) == 27)
@@ -32,13 +32,41 @@ int main()
 				overlord.targeting.enabledebugging();
 			else
 				overlord.targeting.disabledebugging(); 
-        }
+		}
+
 		else if (char(overlord.targeting.key) == 99)//open command prompt
+		{
 			system("pause");////////////////////////////////////////////////////////////////////////////////////
 
-		overlord.targeting.clock.tick();
+			//show
+			//target list
+			//detection mode
+			//current 
+
+			//change
+			//detection method
+			//mode//search//s&d//kill a target//kill all targets
+
+			//kill a target
+
+			//remove target
+
+			//reset system
+
+			//exit
+
+		}
+		else//help menu
+		{
+			std::cout<<"\n  HELP:  \n---------\n";
+			std::cout<<"Enter 'ESC' to exit program\n";
+			std::cout<<"Enter 'd' to open real time debugging\n";
+			std::cout<<"Enter 'c' to open the cmd prompt system\n";
+		}
+
+		overlord.targeting.clock.tick();//advance program clock
     }
-    cvDestroyWindow("Camera_Output"); //Destroy Window
+    cvDestroyWindow("Camera_Output");
 
     return 0;
 

@@ -48,6 +48,7 @@ class Target
 	bool full;//hold whether or not position array is fully used.
 	std::string name;//holds the name of the target
 	long unsigned lastSeen;//last "time" the target was updated
+	unsigned timesSeen;//number of times this target has been seen
 public:
 	Target(){position[0][0]=position[0][1]=position[0][2]=0;orientation[0][0]=orientation[0][1]=0.0;cursor=0;full=false;}
 	Target(float a, float b, int x, int y, int r,  long unsigned time,std::string c){add(a,b,x,y,r,time);cursor=1;name=c;lastSeen=time;full=false;}
@@ -203,7 +204,7 @@ public:
 
 	void search(cv::Mat,cv::Mat &);//searchs a frame for targets using TargetingController
 	void search();//uses primaryStream stream
-	void reset(bool);//only works if reasched the end of a sweep where the argument is a command (0 = clear targets, 1 = kill all)
+	void reset(bool);//resets the system. argument is a command (0 = clear targets, 1 = kill all)
 	bool changeMode(int i){if (i<4 && i>0){mode=i;} else {return false;} return true;}
 	//0=search, 1=search and destroy, 3=killall; 2=kill (requires more input or just kills the most recent target.)
 	
@@ -218,6 +219,7 @@ public:
 
 extern cv::vector<cv::Vec3f> customDetectionMethod(cv::Mat);
 extern void customDebuggingMenu();
+extern void exitCustomDebuggingMenu();
 
 
 #endif

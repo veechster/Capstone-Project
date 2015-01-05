@@ -41,30 +41,47 @@ void Tools::crosshair(cv::Mat &frame, int x, int y, int r, cv::Vec3i colour,std:
 void Tools::enabledebugging()
 {
 	debuggingmode = true;
-	cvStartWindowThread();
-	cvNamedWindow("HSV_Image", cv::WINDOW_AUTOSIZE);
-	cvNamedWindow("Editted_Image", cv::WINDOW_AUTOSIZE);
-	cvNamedWindow("Adjustors",0);
-    cvCreateTrackbar( "H_MIN", "Adjustors", &H_MIN, 256, 0 );
-    cvCreateTrackbar( "H_MAX", "Adjustors", &H_MAX, 256, 0 );
-    cvCreateTrackbar( "S_MIN", "Adjustors", &S_MIN, 256, 0 );
-    cvCreateTrackbar( "S_MAX", "Adjustors", &S_MAX, 256, 0 );
-    cvCreateTrackbar( "V_MIN", "Adjustors", &V_MIN, 256, 0 );
-    cvCreateTrackbar( "V_MAX", "Adjustors", &V_MAX, 256, 0 );
-    cvCreateTrackbar( "dp", "Adjustors", &dp, 5, 0 );
-    cvCreateTrackbar( "min_dist", "Adjustors", &min_dist, 400, 0 );
-    cvCreateTrackbar( "param_1", "Adjustors", &param_1, 300, 0 );
-    cvCreateTrackbar( "param_2", "Adjustors", &param_2, 300, 0 );
-    cvCreateTrackbar( "min_radius", "Adjustors", &min_radius, 100, 0 );
-    cvCreateTrackbar( "max_radius", "Adjustors", &max_radius, 400, 0 );
-
+	if(detectionMethod==0)
+	{
+		cvStartWindowThread();
+		cvNamedWindow("HSV_Image", cv::WINDOW_AUTOSIZE);
+		cvNamedWindow("Editted_Image", cv::WINDOW_AUTOSIZE);
+		cvNamedWindow("Adjustors",0);
+		cvCreateTrackbar( "H_MIN", "Adjustors", &H_MIN, 256, 0 );
+		cvCreateTrackbar( "H_MAX", "Adjustors", &H_MAX, 256, 0 );
+		cvCreateTrackbar( "S_MIN", "Adjustors", &S_MIN, 256, 0 );
+		cvCreateTrackbar( "S_MAX", "Adjustors", &S_MAX, 256, 0 );
+		cvCreateTrackbar( "V_MIN", "Adjustors", &V_MIN, 256, 0 );
+		cvCreateTrackbar( "V_MAX", "Adjustors", &V_MAX, 256, 0 );
+		cvCreateTrackbar( "dp", "Adjustors", &dp, 5, 0 );
+		cvCreateTrackbar( "min_dist", "Adjustors", &min_dist, 400, 0 );
+		cvCreateTrackbar( "param_1", "Adjustors", &param_1, 300, 0 );
+		cvCreateTrackbar( "param_2", "Adjustors", &param_2, 300, 0 );
+		cvCreateTrackbar( "min_radius", "Adjustors", &min_radius, 100, 0 );
+		cvCreateTrackbar( "max_radius", "Adjustors", &max_radius, 400, 0 );
+	}
+	else if(detectionMethod==1)
+	{
+		//code for IR detection debugging
+	}
+	else
+		customDebuggingMenu();
 }
 void Tools::disabledebugging()
 {
 	debuggingmode = false;
-	cvDestroyWindow("HSV_Image");
-	cvDestroyWindow("Editted_Image");
-	cvDestroyWindow("Adjustors");
+	if(detectionMethod==0)
+	{
+		cvDestroyWindow("HSV_Image");
+		cvDestroyWindow("Editted_Image");
+		cvDestroyWindow("Adjustors");
+	}
+	else if(detectionMethod==1)
+	{
+		//code for closing IR detection debugging
+	}
+	else
+		exitCustomDebuggingMenu();
 }
 
 void Tools::searchFrame(cv::Mat frame)
@@ -83,11 +100,7 @@ void Tools::searchFrame(cv::Mat frame)
 		//code for IR detection
 	}
 	else
-	{
 		circle = customDetectionMethod(frame);
-
-
-	}
 }
 
 

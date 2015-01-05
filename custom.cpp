@@ -7,6 +7,10 @@ void customDebuggingMenu()
 {
 	//empty
 }
+void exitCustomDebuggingMenu()
+{
+	//empty
+}
 cv::vector<cv::Vec3f> customDetectionMethod(cv::Mat frame)
 {
 	//empty
