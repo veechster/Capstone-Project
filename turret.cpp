@@ -17,7 +17,7 @@ void TurretController::killAll()
 {
 	while (targeting.targets.numCurrentTargets()>0)
 	{
-		temp = targeting.targets.getTarget();
+		temp = targeting.targets.getLastTarget();
 		if(!killTarget(temp))//if there was a problem, remove it anyway.
 			targeting.targets.removeTarget(temp);
 	}
@@ -54,7 +54,7 @@ void TurretController::search(cv::Mat frame,cv::Mat & output)
 	//pre process frame and if mode 1 and targets found, kill them and return.
 	if(targeting.processFrame(position,frame,output) && mode == 1)
 	{
-		killTarget(targeting.targets.getTarget());
+		killTarget(targeting.targets.getLastTarget());//as of right now, will only kill 1 target, even if multiple are found
 		return;
 	}
 	

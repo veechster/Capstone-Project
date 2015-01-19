@@ -56,7 +56,7 @@ int main()
 			//exit
 
 		}
-		else//help menu
+		else if(char(overlord.targeting.key) == 104)//help menu
 		{
 			std::cout<<"\n  HELP:  \n---------\n";
 			std::cout<<"Enter 'ESC' to exit program\n";

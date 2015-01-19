@@ -51,10 +51,11 @@ class Target
 	unsigned timesSeen;//number of times this target has been seen
 public:
 	Target(){position[0][0]=position[0][1]=position[0][2]=0;orientation[0][0]=orientation[0][1]=0.0;cursor=0;full=false;}
-	Target(float a, float b, int x, int y, int r,  long unsigned time,std::string c){add(a,b,x,y,r,time);cursor=1;name=c;lastSeen=time;full=false;}
-	void add(float a, float b, int x, int y, int r, long unsigned time){orientation[cursor][0]=a;orientation[cursor][1]=b;position[cursor][0]=x;position[cursor][1]=y;position[cursor][2]=r;cursor=(cursor+1)%10;lastSeen=time;if(cursor==0)full=true;}//adds a position to the array of past positions
-	bool isTarget(float,float,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target
-	void find(float& a, float& b, int& x, int& y, int& r){if(cursor==0)a=orientation[cursor][0];b=orientation[cursor][1];x=position[cursor][0];y=position[cursor][1];r=position[cursor][2];}
+	Target(float a, float b, int x, int y, int r,  long unsigned time,std::string c){addSighting(a,b,x,y,r,time);cursor=1;name=c;lastSeen=time;full=false;}
+	void addSighting(float a, float b, int x, int y, int r, long unsigned time){orientation[cursor][0]=a;orientation[cursor][1]=b;position[cursor][0]=x;position[cursor][1]=y;position[cursor][2]=r;cursor=(cursor+1)%10;lastSeen=time;if(cursor==0)full=true;}//adds a position to the array of past positions
+	const bool isTarget(float,float,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target
+	bool isTarget_add(float,float,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target, adds if it is
+	void location(float&,float&,int&,int&,int&);//returns the last reported position of this target
 	//~Target(){}
 };
 
@@ -69,22 +70,21 @@ class TargetList
 {
 	friend class TargetingController;
 
-	Target* list;//stores all current targets
-	int num;//size of list
+	std::vector<Target*> list;//stores all current targets
 	int foundTargets;//total targets found 
-	
+	Target* temp;
 public:
-	TargetList();
+	TargetList(){foundTargets=0;}
 
-	void clean();
-	void add(Target);
-	void add(int,int,int,std::string);
-	Target getTarget();
-	Target getTarget(std::string);
-	bool removeTarget(Target);
-	Target search(int,int);
-	int numCurrentTargets(){return num;}//returns size of list (num)
-	std::string getFoundTargets();//returns total number of found targets (x) in string form: "target x"
+	void clean();//deletes everything
+	void add(Target);//adds a target
+	void add(float,float,int,int,int,std::string,long unsigned);//adds a target
+	Target getLastTarget();//gets the most recently inserted target
+	Target getTarget(std::string);//gets a specific target
+	bool removeTarget(Target);//removes a specifc target
+	Target search(float,float,int,int,int,long unsigned);//looks for a target (current time)
+	int numCurrentTargets(){return list.size();}//returns size of list (num)
+	std::string getFoundTargets(){return "target " + std::to_string(foundTargets);}//returns total number of found targets (x) in string form: "target x"
 
 };
 
