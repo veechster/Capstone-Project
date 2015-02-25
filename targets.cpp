@@ -139,7 +139,7 @@ Target TargetList::search(float a,float b,int x,int y,int r,long unsigned t)////
 }
 
 //function processes frame and updates target datatype
-bool TargetingController::processFrame(cv::Vec2f turretPos,cv::Mat frame,cv::Mat& output)
+bool TargetingController::processFrame(cv::Vec2s turretPos,cv::Mat frame,cv::Mat& output)
 {
 	while(!control.circle.empty())//clean temp storage
 		control.circle.pop_back();

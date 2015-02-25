@@ -1,6 +1,8 @@
 #ifndef HEADER_H
 #define HEADER_H
 
+#include <stdio.h>
+#include <windows.h>
 #include <sstream>
 #include <iostream>
 #include <opencv2/core/core.hpp>
@@ -13,6 +15,13 @@
 
 #define LASER_POSITION_X FRAME_WIDTH/2-25
 #define LASER_POSITION_Y FRAME_HEIGHT/2-25
+
+#define TURRET_START_POSITION_X 4000
+#define TURRET_START_POSITION_Y 4600
+#define TURRET_END_POSITION_X 8000
+#define TURRET_END_POSITION_Y 6500
+
+
 
 /***
 ADT: Ptime
@@ -151,7 +160,7 @@ class TargetingController
 	friend class TurretController;
 
 	TargetList targets;//list of all current targets
-	bool processFrame(cv::Vec2f,cv::Mat,cv::Mat &);//process a frame for targets and add them
+	bool processFrame(cv::Vec2s,cv::Mat,cv::Mat &);//process a frame for targets and add them
 	const cv::vector<cv::Vec3f> processFrame(cv::Mat);//process a frame for targets and return them.
 
 public:
@@ -182,12 +191,14 @@ class TurretController
 	cv::Mat frame;
 	Target temp;
 
-	cv::Vec2f startPosition;//this needs to be decided upon and calibrated once the turret is connected and communication is possible///////////////////////////////
-	cv::Vec2f endPostion;
-
-	cv::Vec2f position;
+	unsigned short positionX;
+	unsigned short positionY;
 	long unsigned lastMove;
-	cv::Vec2f prevPosition;
+	unsigned short prevPositionX;
+	unsigned short prevPositionY;
+	unsigned short tempPosition;
+
+	cv::Vec2s position;
 
 	int mode;//0=search, 1=search and destroy, 3=killall; 2=kill (requires more input or just kills the most recent target.)
 	
@@ -195,25 +206,38 @@ class TurretController
 	bool killTarget(Target);
 	bool killTarget(std::string);
 
+	//move left, right, down, up, return to prev position, output current position, etc.
+	bool moveLeft(short);
+	bool moveRight(short);
+	bool moveUp(short);
+	bool moveDown(short);
+
+	BOOL maestroGetPosition(HANDLE port, unsigned char channel, unsigned short * position);
+
+	BOOL maestroSetTarget(HANDLE port, unsigned char channel, unsigned short target);
+
 public:
 	TargetingController targeting;
 	cv::VideoCapture stream;
 	cv::VideoCapture stream1;
 	int primaryStream;
 
+	HANDLE port;
+	char * portName;
+	int baudRate;
 
 	void search(cv::Mat,cv::Mat &);//searchs a frame for targets using TargetingController
 	void search();//uses primaryStream stream
 	void reset(bool);//resets the system. argument is a command (0 = clear targets, 1 = kill all)
 	bool changeMode(int i){if (i<4 && i>0){mode=i;} else {return false;} return true;}
 	//0=search, 1=search and destroy, 3=killall; 2=kill (requires more input or just kills the most recent target.)
-	
-	//move left, right, down, up, return to prev position, output current position, etc.
 
-	//update position function that uses position?
+	bool updatePosition();
+	bool initPosition();
 
 	TurretController();
 
+	HANDLE openPort(const char * portName, unsigned int baudRate);
 };
 
 

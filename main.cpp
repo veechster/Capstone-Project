@@ -1,8 +1,6 @@
 #include "header.h"
 
 
-
-
 int main()
 {
 	cv::Mat frame;//holds a frame from camera
@@ -15,8 +13,21 @@ int main()
 	overlord.stream.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH);//set height and width of capture frame
 	overlord.stream.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT);
 
+	//set up com port
+	//NEXT LINE: or use COM3
+	overlord.portName = "\\\\.\\USBSER000";  // Each double slash in this source code represents one slash in the actual name.;
+	overlord.baudRate= 9600;
+	overlord.port = overlord.openPort(overlord.portName, overlord.baudRate);
+	if (overlord.port == INVALID_HANDLE_VALUE){ return -1; }
+
+	overlord.initPosition();
+
+
     while(1)//Create infinte loop for live streaming
 	{
+		if(overlord.targeting.clock.getTime() % 10 == 0)
+			overlord.updatePosition();
+
 		overlord.stream.read(frame);//get a frame
 
 		overlord.search(frame,frame);//process the frame looking for targets
