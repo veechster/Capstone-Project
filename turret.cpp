@@ -156,7 +156,7 @@ bool TurretController::updatePosition()
 		if(positionY > TURRET_END_POSITION_Y)
 		{
 			std::cout<<"END OF SWEEP";
-			system("pause");
+			//system("pause");
 			//BEGIN NEW SWEEP ------ user input to determine course of action ------ bound by time
 			positionY = TURRET_START_POSITION_Y;//temporary?
 		}

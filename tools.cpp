@@ -9,12 +9,12 @@ Tools::Tools()
 	debuggingmode = false;
 	detectionMethod = 0;
 	//initalize the filtering values
-	H_MIN = 0;
-	H_MAX = 256;
-	S_MIN = 0;
-	S_MAX = 256;
-	V_MIN = 0;
-	V_MAX = 256;
+	H_MIN = 70;//0;
+	H_MAX = 90;//256;
+	S_MIN = 40;//0;
+	S_MAX = 150;//256;
+	V_MIN = 95;//0;
+	V_MAX = 216;//256;
 	//for houghcircles debugging
 	dp = 2;
 	min_dist = 100;

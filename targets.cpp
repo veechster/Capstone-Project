@@ -4,10 +4,20 @@
 #include "header.h"
 
 //returns last reported position of this target
-void Target::location(float& a, float& b, int& x, int& y, int& r)
+void Target::location(short& a, short& b, int& x, int& y, int& r)
 {
 	if(cursor==0)
-		cursor=11;
+	{
+		if(full==false)
+		{
+			a=b=0;
+			x=y=r=0;
+
+			return;//no previous position stored
+		}
+
+		cursor=10;//for getting the last position
+	}
 		
 	a=orientation[cursor-1][0];
 	b=orientation[cursor-1][1];
@@ -15,27 +25,28 @@ void Target::location(float& a, float& b, int& x, int& y, int& r)
 	y=position[cursor-1][1];
 	r=position[cursor-1][2];
 
-	if(cursor==1)
+	if(cursor==10)
 		cursor=0;
 }
 
 
 //function checks the current position relative to the past poitions.
 //if it is a position of this target, it is atomatically added
-bool const Target::isTarget(float a, float b, int x, int y, int r,long unsigned time)
+bool const Target::isTarget(short a, short b, int x, int y, int r,long unsigned time)
 {
 	if(cursor==0 && full==false)
-		return false;//no previous position stored
+			return false;//no previous position stored
+		
 
 	//this algorithm requires refinement -- look for previous positions, patterns, but keep execution time very fast.
 	//is set up for stationary targets
-	if(x<=position[cursor][0]+10 && x>=position[cursor][0]-10 && y<=position[cursor][1]+10 && y>=position[cursor][1]-10 && r<=position[cursor][2]+5 && r>=position[cursor][2]-5)
-		return true;	
+	if(x<=position[(cursor%10)-1][0]+10 && x>=position[(cursor%10)-1][0]-10 && y<=position[(cursor%10)-1][1]+10 && y>=position[(cursor%10)-1][1]-10 && r<=position[(cursor%10)-1][2]+5 && r>=position[(cursor%10)-1][2]-5)
+		return true;		
 
 	return false;
 }
 
-bool Target::isTarget_add(float a, float b, int x, int y, int r,long unsigned time)
+bool Target::isTarget_add(short a, short b, int x, int y, int r,long unsigned time)
 {
 	if(this->isTarget(a,b,x,y,r,time))
 	{
@@ -56,40 +67,31 @@ void TargetList::clean()
 	}
 }
 
-void TargetList::add(Target newTarget)
+void TargetList::add(short a,short b,int x,int y,int r,std::string n,long unsigned t)
 {
+	for (std::vector<Target*>::iterator it = list.begin(); it != list.end(); it++)
+	{	
+		if((*it)->isTarget_add(a,b,x,y,r,t))
+		{
+			return;
+		}
+	}
+
 	temp = new Target;
-
-	if(newTarget.cursor==0)
-		newTarget.cursor=11;
-		
-	temp->orientation[0][0]=newTarget.orientation[newTarget.cursor-1][0];
-	temp->orientation[0][1]=newTarget.orientation[newTarget.cursor-1][1];
-	temp->position[0][0]=newTarget.position[newTarget.cursor-1][0];
-	temp->position[0][1]=newTarget.position[newTarget.cursor-1][1];
-	temp->position[0][2]=newTarget.position[newTarget.cursor-1][2];
-	temp->lastSeen=newTarget.lastSeen;
-	temp->name=newTarget.name;
-	temp->full=0;
-	temp->cursor=1;
-
-	list.push_back(temp);
-
-}
-
-void TargetList::add(float a,float b,int x,int y,int r,std::string n,long unsigned t)
-{
 	temp->orientation[0][0]=a;
 	temp->orientation[0][1]=b;
 	temp->position[0][0]=x;
 	temp->position[0][1]=y;
 	temp->position[0][2]=r;
 	temp->lastSeen=t;
+	temp->timesSeen=1;
 	temp->name=n;
 	temp->full=0;
 	temp->cursor=1;
-
 	list.push_back(temp);
+
+	this->foundTargets++;
+
 }
 
 //returns the actual data. (could be used improperly)
@@ -126,7 +128,7 @@ bool TargetList::removeTarget(Target t)/////////////////////////////////double c
 	return false;
 }
 
-Target TargetList::search(float a,float b,int x,int y,int r,long unsigned t)/////////////////////////////////double check to make sure this works.
+Target TargetList::search(short a,short b,int x,int y,int r,long unsigned t)/////////////////////////////////double check to make sure this works.
 {
 	//search each target using Target
 	for(unsigned i=0;i<list.size();i++)
@@ -146,51 +148,26 @@ bool TargetingController::processFrame(cv::Vec2s turretPos,cv::Mat frame,cv::Mat
 
 	control.searchFrame(frame);
 
-	control.crosshair(output,FRAME_WIDTH/2, FRAME_HEIGHT/2,0,cv::Vec3i(100,100,100),"center");
-
-	//TEMPORARY CODE FOR DEMO
-	//draws targets on each found target.
-	for( size_t i = 0; i < this->control.circle.size(); i++ )
-		this->control.crosshair(output,cvRound(this->control.circle[i][0]), cvRound(this->control.circle[i][1]), cvRound(this->control.circle[i][2]),  cv::Vec3i(0,0,255), "target");
-
-
-	for( size_t i = 0; i < this->control.circle.size(); i++ )
-		this->control.circle.pop_back();
-	//END OF DEMO SNIPPET
-
-	
 	//DRAW LASER TARGET ON SCREEN
+	control.crosshair(output,FRAME_WIDTH/2, FRAME_HEIGHT/2,0,cv::Vec3i(100,100,100),"center");
 	cv::circle(output,cv::Point(LASER_POSITION_X,LASER_POSITION_Y),5,cv::Scalar(0,255,0),1);//(where the laser is aimed)
-
 	
-	/*CODE FOR ADDING TARGETS TO ADT
-
-
-	for( size_t i = 0; i < circle.size(); i++ )
+	
+	//CODE FOR ADDING TARGETS
+	for( size_t i = control.circle.size(); i > 0; i-- )
     {
-		//add to adt
-		this->targetList.add(cvRound(circle.back()[0]),cvRound(circle.back()[1]),cvRound(circle.back()[2]),this->targetList.getFoundTargets());
-		circle.pop_back();
-
-		std::cout<<"Target "<<this->targetList.getFoundTargets()<<"Aquired.\n";//outputing may require too much time.
-	
-
-		//clear old targets here?
-	}
-
-	for(int i = this->targetList.numCurrentTargets();i>0;i--)/////////////////////////////////////////////////////////////////////////////////////////////DEMO//////////////////////////////////////////
-	{
-		//smooth out target "bouncing"
-
-		//draw crosshair on target
-		crosshair(imgRGB,cvRound(circle[i][0]), cvRound(circle[i][1]), "target");        
+		//check if each target exists and add them
 		
-		//draw circle of radius around target
-        cv::circle(imgRGB, cv::Point(cvRound(circle[i][0]), cvRound(circle[i][1])), cvRound(circle[i][2]), cv::Scalar(0,255,255), 2);
-
-	}
-	*/
+		this->targets.add(turretPos[0],turretPos[1],cvRound(control.circle.back()[0]),cvRound(control.circle.back()[1]),cvRound(control.circle.back()[2]),this->targets.getFoundTargets(),clock.getTime());
 		
+		//identify each target on screen
+		//draws targets on each found target.
+		this->control.crosshair(output,cvRound(this->control.circle.back()[0]), cvRound(this->control.circle.back()[1]), cvRound(this->control.circle.back()[2]),  cv::Vec3i(0,0,255), this->targets.getFoundTargets());
+		
+		control.circle.pop_back();
+
+		std::cout<<this->targets.getFoundTargets()<<"Aquired.\n";//outputing may require too much time.
+	}
 
 	if(debuggingModeActive())//DEBUGGING MODE
 	{

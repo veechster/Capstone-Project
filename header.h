@@ -52,19 +52,19 @@ class Target
 	friend class TargetList;
 
 	cv::Vec3i position[10];//array of last 10 positions (x,y,r) where r is radius
-	cv::Vec2f orientation[10];//keeps track of the turret position
+	cv::Vec2s orientation[10];//keeps track of the turret position
 	int cursor;//hold the position of the NEXT place in the array of positions to be used.
 	bool full;//hold whether or not position array is fully used.
 	std::string name;//holds the name of the target
 	long unsigned lastSeen;//last "time" the target was updated
 	unsigned timesSeen;//number of times this target has been seen
 public:
-	Target(){position[0][0]=position[0][1]=position[0][2]=0;orientation[0][0]=orientation[0][1]=0.0;cursor=0;full=false;}
-	Target(float a, float b, int x, int y, int r,  long unsigned time,std::string c){addSighting(a,b,x,y,r,time);cursor=1;name=c;lastSeen=time;full=false;}
-	void addSighting(float a, float b, int x, int y, int r, long unsigned time){orientation[cursor][0]=a;orientation[cursor][1]=b;position[cursor][0]=x;position[cursor][1]=y;position[cursor][2]=r;cursor=(cursor+1)%10;lastSeen=time;if(cursor==0)full=true;}//adds a position to the array of past positions
-	const bool isTarget(float,float,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target
-	bool isTarget_add(float,float,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target, adds if it is
-	void location(float&,float&,int&,int&,int&);//returns the last reported position of this target
+	Target(){position[0][0]=position[0][1]=position[0][2]=0;orientation[0][0]=orientation[0][1]=0;cursor=0;full=false;}
+	Target(short a, short b, int x, int y, int r,  long unsigned time,std::string c){addSighting(a,b,x,y,r,time);cursor=1;name=c;lastSeen=time;full=false;}
+	void addSighting(short a, short b, int x, int y, int r, long unsigned time){orientation[cursor][0]=a;orientation[cursor][1]=b;position[cursor][0]=x;position[cursor][1]=y;position[cursor][2]=r;cursor=(cursor+1)%10;lastSeen=time;if(cursor==0)full=true;}//adds a position to the array of past positions
+	const bool isTarget(short,short,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target
+	bool isTarget_add(short,short,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target, adds if it is
+	void location(short&,short&,int&,int&,int&);//returns the last reported position of this target
 	//~Target(){}
 };
 
@@ -86,12 +86,12 @@ public:
 	TargetList(){foundTargets=0;}
 
 	void clean();//deletes everything
-	void add(Target);//adds a target
-	void add(float,float,int,int,int,std::string,long unsigned);//adds a target
+	//void add(Target);//adds a target  // removed?
+	void add(short,short,int,int,int,std::string,long unsigned);//adds a target
 	Target getLastTarget();//gets the most recently inserted target
 	Target getTarget(std::string);//gets a specific target
 	bool removeTarget(Target);//removes a specifc target
-	Target search(float,float,int,int,int,long unsigned);//looks for a target (current time)
+	Target search(short,short,int,int,int,long unsigned);//looks for a target (current time)
 	int numCurrentTargets(){return list.size();}//returns size of list (num)
 	std::string getFoundTargets(){return "target " + std::to_string(foundTargets);}//returns total number of found targets (x) in string form: "target x"
 

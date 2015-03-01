@@ -15,7 +15,7 @@ int main()
 
 	//set up com port
 	//NEXT LINE: or use COM3
-	overlord.portName = "\\\\.\\USBSER000";  // Each double slash in this source code represents one slash in the actual name.;
+	overlord.portName = "COM3"; "\\\\.\\USBSER000";  // Each double slash in this source code represents one slash in the actual name.;
 	overlord.baudRate= 9600;
 	overlord.port = overlord.openPort(overlord.portName, overlord.baudRate);
 	if (overlord.port == INVALID_HANDLE_VALUE){ return -1; }
