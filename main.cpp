@@ -23,10 +23,13 @@ int main()
 	overlord.initPosition();
 
 
+
+	////////////move main loop inside admin class? turretController
+
     while(1)//Create infinte loop for live streaming
 	{
 		if(overlord.targeting.clock.getTime() % 10 == 0)
-			overlord.updatePosition();
+			0;//overlord.updatePosition();
 
 		overlord.stream.read(frame);//get a frame
 
