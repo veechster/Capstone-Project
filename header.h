@@ -196,6 +196,7 @@ public:
 //the system controlling class
 class Zeus
 {
+	cv::Mat frame;
 	bool killTarget();
 
 	TargetingController targeting;

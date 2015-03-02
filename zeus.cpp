@@ -36,19 +36,31 @@ int Zeus::begin()
 
 int Zeus::run()
 {
-	cv::Mat frame;
-
 	while(1)//Create infinte loop for live streaming
 	{
 		//check to move turret
 		if(targeting.clock.getTime() % 10 == 0)
-			0;//targeting.updatePosition();
+			turret.updatePosition();
 
 		stream.read(frame);//get a frame
-
-		targeting.processFrame(frame,frame);//process the frame looking for targets
-
+		
 		imshow("Camera_Output", frame);//show the result
+
+		if(targeting.processFrame(frame,frame))//process the frame looking for targets
+		{
+			std::cout<<"Target Detected.\n";
+
+			key = cvWaitKey(500);
+			
+			std::cout<<"Eliminating Target.\n";
+
+			key = cvWaitKey(500);
+
+			if (char(key) == 27)//If you hit ESC nothing will happen
+				std::cout<<"Kill cancelled.\n";
+			else
+				0;//killTarget();
+		}
 
         key = cvWaitKey(30);//Capture Keyboard stroke
         if (char(key) == 27)
@@ -102,36 +114,36 @@ int Zeus::run()
 
 bool Zeus::killTarget()
 {
-	/*
-	//kill the target
-	targetPosition = targeting.getBestTarget();
+	turret.targetPosition = targeting.getBestTarget();
 
 	//check target to see if it makes sense
-	if(targetPosition[0] + 10 >= FRAME_WIDTH/2 && targetPosition[0] - 10 <= FRAME_WIDTH/2 &&
-		targetPosition[1] + 10 >= FRAME_HEIGHT/2 && targetPosition[1] - 10 <= FRAME_HEIGHT/2)
+	if(turret.targetPosition[0] + 15 >= FRAME_WIDTH/2 && turret.targetPosition[0] - 15 <= FRAME_WIDTH/2 &&
+		turret.targetPosition[1] + 15 >= FRAME_HEIGHT/2 && turret.targetPosition[1] - 15 <= FRAME_HEIGHT/2)
 	{
 		//fire laser
 		system("pause");
+		return true;
 	}
 	
-	if(targetPosition[0] > FRAME_WIDTH/2)	
-		this->moveRight(100);
+	if(turret.targetPosition[0] > FRAME_WIDTH/2)	
+		turret.moveRight(100);
 		
-	if(targetPosition[0] < FRAME_WIDTH/2)
-		this->moveLeft(100);
+	if(turret.targetPosition[0] < FRAME_WIDTH/2)
+		turret.moveLeft(100);
 
-	if(targetPosition[1] > FRAME_HEIGHT/2)
-		this->moveDown(100);
+	if(turret.targetPosition[1] > FRAME_HEIGHT/2)
+		turret.moveDown(100);
 		
-	if(targetPosition[1] < FRAME_HEIGHT/2)
-		this->moveUp(100);
+	if(turret.targetPosition[1] < FRAME_HEIGHT/2)
+		turret.moveUp(100);
 
 
 	
 	stream.read(frame);
-	//targetting.processframe
-	*/
-	return true;
+	targeting.processFrame(frame,frame);
+	imshow("Camera_Output", frame);
+
+	killTarget();
 }
 
 

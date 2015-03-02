@@ -24,15 +24,15 @@ bool TargetingController::processFrame(cv::Mat frame,cv::Mat& output)
 
 	//DRAW LASER TARGET ON SCREEN
 	control.crosshair(output,FRAME_WIDTH/2, FRAME_HEIGHT/2,0,cv::Vec3i(100,100,100),"center");
-	cv::circle(output,cv::Point(LASER_POSITION_X,LASER_POSITION_Y),5,cv::Scalar(150,0,200),2);//(where the laser is aimed)
+
+	cv::circle(output,cv::Point(LASER_POSITION_X,LASER_POSITION_Y),5,cv::Scalar(150,0,200),2);//where the laser is aimed
+
+	cv::circle(output,cv::Point(FRAME_WIDTH/2,FRAME_HEIGHT/2),30,cv::Scalar(75,75,75),1);//the kill circle
 	
 		//identify each target on screen
 		//draws targets on each found target.
-	for(int i = control.circle.size(); i<0; i--)
-	{
-		this->control.crosshair(output,cvRound(this->control.circle.back()[0]), cvRound(this->control.circle.back()[1]), cvRound(this->control.circle.back()[2]),  cv::Vec3i(0,0,255), "target");
-		control.circle.pop_back();
-	}
+	for (std::vector<cv::Vec3f>::iterator circleIterator = control.circle.begin(); circleIterator != control.circle.end(); ++circleIterator)
+		this->control.crosshair(output,cvRound((*circleIterator)[0]), cvRound((*circleIterator)[1]), cvRound((*circleIterator)[2]),  cv::Vec3i(0,0,255), "target");
 
 	if(debuggingModeActive())//DEBUGGING MODE
 	{
@@ -51,12 +51,26 @@ bool TargetingController::processFrame(cv::Mat frame,cv::Mat& output)
 	return false;//no targets found
 }
 
-cv::Vec3f TargetingController::getBestTarget()/////////////////////////////////////////////////////////////////////////////////////////////////
+//find out which target is closest to center
+cv::Vec3f TargetingController::getBestTarget()
 {
+	float temp=1000.0;
+	std::vector<cv::Vec3f>::iterator best;
+
 	//find out which target is closest to center
+	for (std::vector<cv::Vec3f>::iterator circleIterator = control.circle.begin(); circleIterator != control.circle.end(); ++circleIterator)
+	{
+		if(abs((*circleIterator)[0]-FRAME_WIDTH)+abs((*circleIterator)[0]-FRAME_HEIGHT) < temp)
+		{
+			temp = abs((*circleIterator)[0]-FRAME_WIDTH)+abs((*circleIterator)[0]-FRAME_HEIGHT);
+			best = circleIterator;
+		}
+	}
 
-	return cv::Vec3f(FRAME_WIDTH, FRAME_HEIGHT);
+	if(temp==1000)
+		return cv::Vec3f(-1.0,-1.0);
 
+	return (*best);
 }
 
 //following function does not update target database, instead returns a vector containing all the targets found in the frame.
