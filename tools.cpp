@@ -14,7 +14,7 @@ Tools::Tools()
 	S_MIN = 40;//0;
 	S_MAX = 150;//256;
 	V_MIN = 95;//0;
-	V_MAX = 216;//256;
+	V_MAX = 256;
 	//for houghcircles debugging
 	dp = 2;
 	min_dist = 100;

@@ -3,65 +3,72 @@
 
 #include "header.h"
 
-TurretController::TurretController()
+int TurretController::moveLeft(short amt)
 {
-	initPosition();
-}
-
-bool TurretController::moveLeft(short amt)
-{
-	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return false; }
+	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return -11; }
 	if(tempPosition-amt > TURRET_START_POSITION_X)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition-amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 0, tempPosition-amt) ){ return -11; }
+		return 0;
 	}
 	else 
-		if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return false; }
-	return true;
+	{
+		if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return -11; }
+		return -23;
+	}
 }
 
-bool TurretController::moveRight(short amt)
+int TurretController::moveRight(short amt)
 {
-	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return false; }
+	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return -11; }
 	if(tempPosition+amt < TURRET_END_POSITION_X)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition+amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 0, tempPosition+amt) ){ return -11; }
+		return 0;
 	}
 	else 
+	{
 		if ( ! maestroSetTarget(port, 0, TURRET_END_POSITION_X) ){ return false; }
-	return true;
+		return -23;
+	}
 }
 
-bool TurretController::moveUp(short amt)
+int TurretController::moveUp(short amt)
 {
-	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return false; }
+	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return -11; }
 	if(tempPosition+amt < TURRET_END_POSITION_Y)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition+amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 1, tempPosition+amt) ){ return -11; }
+		return 0;
 	}
 	else 
-		if ( ! maestroSetTarget(port, 0, TURRET_END_POSITION_Y) ){ return false; }
-	return true;
-}
-
-bool TurretController::moveDown(short amt)
-{
-	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return false; }
-	if(tempPosition-amt > TURRET_END_POSITION_Y)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition-amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 1, TURRET_END_POSITION_Y) ){ return -11; }
+		return -23;
 	}
-	else 
-		if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_Y) ){ return false; }
-	return true;
 }
 
-bool TurretController::updatePosition()
+int TurretController::moveDown(short amt)
+{
+	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return -11; }
+	if(tempPosition-amt > TURRET_START_POSITION_Y)
+	{
+		if ( ! maestroSetTarget(port, 1, tempPosition-amt) ){ return -11; }
+		return 0;
+	}
+	else 
+	{
+		if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return -11; }
+		return -23;
+	}
+}
+
+int TurretController::updatePosition()
 {
 	if(prevPositionX == TURRET_END_POSITION_X)
 	{
 		positionX = TURRET_START_POSITION_X;
-		positionY = prevPositionY + 250;
+		positionY = prevPositionY + TURRET_MOVE_AMT_Y;
 		
 		if(positionY > TURRET_END_POSITION_Y)
 		{
@@ -73,29 +80,29 @@ bool TurretController::updatePosition()
 	}
 	else
 	{
-		positionX = prevPositionX += 250;
+		positionX = prevPositionX += TURRET_MOVE_AMT_X;
 		positionY = prevPositionY;
 	}
 
 	//set new turret position to continue sweep
-	if ( ! maestroSetTarget(port, 0, positionX) ){ return false; }
-	if ( ! maestroSetTarget(port, 1, positionY) ){ return false; }
+	if ( ! maestroSetTarget(port, 0, positionX) ){ return -11; }
+	if ( ! maestroSetTarget(port, 1, positionY) ){ return -11; }
 
 	prevPositionX = positionX;
 	prevPositionY = positionY;
 
-	return true;
+	return 0;
 }
 
-bool TurretController::initPosition()
+int TurretController::initPosition()
 {
-	if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return false; }
-	if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return false; }
+	if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return -11; }
+	if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return -11; }
 
 	prevPositionX = TURRET_START_POSITION_X;
-	prevPositionY = TURRET_START_POSITION_Y'
+	prevPositionY = TURRET_START_POSITION_Y;
 
-	return true;
+	return 0;
 }
 
 

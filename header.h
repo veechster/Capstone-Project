@@ -21,6 +21,12 @@
 #define TURRET_END_POSITION_X 8000
 #define TURRET_END_POSITION_Y 6500
 
+#define TURRET_MOVE_AMT_X 100
+#define TURRET_MOVE_AMT_Y 300
+#define TURRET_MOVE_FREQ 4
+
+#define ZEUS_PATIENCE 10
+
 
 
 
@@ -161,6 +167,7 @@ class TurretController
 	unsigned short positionY;
 	unsigned short prevPositionX;
 	unsigned short prevPositionY;
+	unsigned short tempPosition;
 
 	cv::Vec3f targetPosition;
 
@@ -171,21 +178,21 @@ class TurretController
 	HANDLE openPort(const char * portName, unsigned int baudRate);	
 
 	//move left, right, down, up, return to prev position, output current position, etc.
-	bool moveLeft(short);
-	bool moveRight(short);
-	bool moveUp(short);
-	bool moveDown(short);
+	int moveLeft(short);
+	int moveRight(short);
+	int moveUp(short);
+	int moveDown(short);
 
 	HANDLE port;
 	char * portName;
 	int baudRate;
 
-	bool updatePosition();
-	bool initPosition();
+	int updatePosition();
+	int initPosition();
 
 public:
 
-	TurretController();
+	TurretController(){}
 	
 };
 
@@ -194,7 +201,12 @@ public:
 class Zeus
 {
 	cv::Mat frame;
+
+	short counter;
+
 	bool killTarget();
+
+	int onKey();
 
 	TargetingController targeting;
 	TurretController turret;	

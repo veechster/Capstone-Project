@@ -48,6 +48,9 @@ bool TargetingController::processFrame(cv::Mat frame,cv::Mat& output)
 
 	}
 
+	if( ! control.circle.size()==0)
+		return true;
+
 	return false;//no targets found
 }
 
@@ -68,7 +71,7 @@ cv::Vec3f TargetingController::getBestTarget()
 	}
 
 	if(temp==1000)
-		return cv::Vec3f(-1.0,-1.0);
+		return cv::Vec3f(-1.0,-1.0,-1.0);
 
 	return (*best);
 }
