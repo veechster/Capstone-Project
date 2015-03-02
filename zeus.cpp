@@ -40,7 +40,8 @@ int Zeus::run()
 	{
 		//check to move turret
 		if(targeting.clock.getTime() % 10 == 0)
-			turret.updatePosition();
+			if(!turret.updatePosition())
+				return -11;//comm loss
 
 		stream.read(frame);//get a frame
 		
@@ -75,7 +76,7 @@ int Zeus::run()
 
 		else if (char(key) == 99)//open command prompt
 		{
-			system("pause");////////////////////////////////////////////////////////////////////////////////////
+			system("pause");
 
 			//show
 			//target list
@@ -120,7 +121,15 @@ bool Zeus::killTarget()
 	if(turret.targetPosition[0] + 15 >= FRAME_WIDTH/2 && turret.targetPosition[0] - 15 <= FRAME_WIDTH/2 &&
 		turret.targetPosition[1] + 15 >= FRAME_HEIGHT/2 && turret.targetPosition[1] - 15 <= FRAME_HEIGHT/2)
 	{
-		//fire laser
+
+		//turn on laser
+
+		Sleep(4000);
+
+		//turn off laser
+
+		//look at frame???
+
 		system("pause");
 		return true;
 	}
@@ -143,7 +152,7 @@ bool Zeus::killTarget()
 	targeting.processFrame(frame,frame);
 	imshow("Camera_Output", frame);
 
-	killTarget();
+	return killTarget();
 }
 
 

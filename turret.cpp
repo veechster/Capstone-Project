@@ -5,7 +5,7 @@
 
 TurretController::TurretController()
 {
-	lastMove = 0;
+	initPosition();
 }
 
 bool TurretController::moveLeft(short amt)
@@ -58,10 +58,6 @@ bool TurretController::moveDown(short amt)
 
 bool TurretController::updatePosition()
 {
-	//get maestro current position:
-	if ( ! maestroGetPosition(port, 0, &prevPositionX) ){ return false; }
-	if ( ! maestroGetPosition(port, 1, &prevPositionY) ){ return false; }
-
 	if(prevPositionX == TURRET_END_POSITION_X)
 	{
 		positionX = TURRET_START_POSITION_X;
@@ -85,8 +81,8 @@ bool TurretController::updatePosition()
 	if ( ! maestroSetTarget(port, 0, positionX) ){ return false; }
 	if ( ! maestroSetTarget(port, 1, positionY) ){ return false; }
 
-	position[0] = positionX;
-	position[1] = positionY;
+	prevPositionX = positionX;
+	prevPositionY = positionY;
 
 	return true;
 }
@@ -95,6 +91,10 @@ bool TurretController::initPosition()
 {
 	if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return false; }
 	if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return false; }
+
+	prevPositionX = TURRET_START_POSITION_X;
+	prevPositionY = TURRET_START_POSITION_Y'
+
 	return true;
 }
 

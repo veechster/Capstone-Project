@@ -159,12 +159,9 @@ class TurretController
 
 	unsigned short positionX;
 	unsigned short positionY;
-	long unsigned lastMove;
 	unsigned short prevPositionX;
 	unsigned short prevPositionY;
-	unsigned short tempPosition;
 
-	cv::Vec2s position;
 	cv::Vec3f targetPosition;
 
 	BOOL maestroGetPosition(HANDLE port, unsigned char channel, unsigned short * position);
