@@ -51,14 +51,13 @@ bool TargetingController::processFrame(cv::Mat frame,cv::Mat& output)
 	return false;//no targets found
 }
 
-cv::Vec3f TargetingController::getBestTarget()
+cv::Vec3f TargetingController::getBestTarget()/////////////////////////////////////////////////////////////////////////////////////////////////
 {
 	//find out which target is closest to center
 
 	return cv::Vec3f(FRAME_WIDTH, FRAME_HEIGHT);
 
 }
-
 
 //following function does not update target database, instead returns a vector containing all the targets found in the frame.
 const cv::vector<cv::Vec3f> TargetingController::processFrame(cv::Mat frame)

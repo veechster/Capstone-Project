@@ -5,64 +5,7 @@
 
 TurretController::TurretController()
 {
-	lastMove = targeting.clock.getTime();
-
-	primaryStream = 0;
-
-}
-
-///rescursive????
-bool TurretController::killTarget()
-{
-	//kill the target
-	targetPosition = targeting.getBestTarget();
-
-	//check target to see if it makes sense
-	if(targetPosition[0] + 10 >= FRAME_WIDTH/2 && targetPosition[0] - 10 <= FRAME_WIDTH/2 &&
-		targetPosition[1] + 10 >= FRAME_HEIGHT/2 && targetPosition[1] - 10 <= FRAME_HEIGHT/2)
-	{
-		//fire laser
-		system("pause");
-	}
-	
-	if(targetPosition[0] > FRAME_WIDTH/2)	
-		this->moveRight(100);
-		
-	if(targetPosition[0] < FRAME_WIDTH/2)
-		this->moveLeft(100);
-
-	if(targetPosition[1] > FRAME_HEIGHT/2)
-		this->moveDown(100);
-		
-	if(targetPosition[1] < FRAME_HEIGHT/2)
-		this->moveUp(100);
-
-
-	
-	stream.read(frame);
-	//targetting.processframe
-
-	return true;
-}
-
-void TurretController::search(cv::Mat frame,cv::Mat & output)
-{
-	//pre process frame and if targets found, kill them and return.
-	if(targeting.processFrame(frame,output))
-		killTarget();
-
-	return;
-}
-
-void TurretController::search()
-{
-	if(primaryStream==0)
-		stream.read(frame);
-	else
-		stream1.read(frame);
-
-	search(frame,frame);
-	return;
+	lastMove = 0;
 }
 
 bool TurretController::moveLeft(short amt)
@@ -126,10 +69,10 @@ bool TurretController::updatePosition()
 		
 		if(positionY > TURRET_END_POSITION_Y)
 		{
-			std::cout<<"END OF SWEEP";
-			//system("pause");
-			//BEGIN NEW SWEEP ------ user input to determine course of action ------ bound by time
-			positionY = TURRET_START_POSITION_Y;//temporary?
+			std::cout<<"End of sweep.\n";
+			Sleep(1000);
+			std::cout<<"Beginning new sweep.\n";
+			positionY = TURRET_START_POSITION_Y;
 		}
 	}
 	else
@@ -138,13 +81,12 @@ bool TurretController::updatePosition()
 		positionY = prevPositionY;
 	}
 
-	//set new turret position to continue sweep:
+	//set new turret position to continue sweep
 	if ( ! maestroSetTarget(port, 0, positionX) ){ return false; }
 	if ( ! maestroSetTarget(port, 1, positionY) ){ return false; }
 
 	position[0] = positionX;
 	position[1] = positionY;
-
 
 	return true;
 }
@@ -157,6 +99,7 @@ bool TurretController::initPosition()
 }
 
 
+//following functions were written by polulu:
 
 /** Implements the Maestro's Get Position serial command.
  * channel: Channel number from 0 to 23

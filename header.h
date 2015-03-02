@@ -109,8 +109,6 @@ public:
 	Tools();
 	void changeDetectionMethod(int i){detectionMethod=i;}
 	int getDetectionMethod(){return detectionMethod;}
-
-
 };
 
 
@@ -124,7 +122,7 @@ Notes:
 ***/
 class TargetingController
 {
-	friend class TurretController;
+	friend class Zeus;
 
 	Tools control;//tools to control the tracking, etc
 
@@ -133,12 +131,10 @@ class TargetingController
 	const cv::vector<cv::Vec3f> processFrame(cv::Mat);//process a frame for targets and do not mark them.
 
 public:
-	char key;//for getting user input
-
 	Ptime clock;//for keeping track of program time
 
-
 	cv::Vec3f getBestTarget();
+
 	void enabledebugging(){control.enabledebugging();}
 	void disabledebugging(){control.disabledebugging();}
 	bool debuggingModeActive(){return control.debuggingmode;}
@@ -157,6 +153,8 @@ Notes:
 ***/
 class TurretController
 {
+	friend class Zeus;
+
 	cv::Mat frame;
 
 	unsigned short positionX;
@@ -169,7 +167,11 @@ class TurretController
 	cv::Vec2s position;
 	cv::Vec3f targetPosition;
 
-	bool killTarget();
+	BOOL maestroGetPosition(HANDLE port, unsigned char channel, unsigned short * position);
+
+	BOOL maestroSetTarget(HANDLE port, unsigned char channel, unsigned short target);
+
+	HANDLE openPort(const char * portName, unsigned int baudRate);	
 
 	//move left, right, down, up, return to prev position, output current position, etc.
 	bool moveLeft(short);
@@ -177,34 +179,38 @@ class TurretController
 	bool moveUp(short);
 	bool moveDown(short);
 
-	BOOL maestroGetPosition(HANDLE port, unsigned char channel, unsigned short * position);
-
-	BOOL maestroSetTarget(HANDLE port, unsigned char channel, unsigned short target);
-
-public:
-	TargetingController targeting;
-	cv::VideoCapture stream;
-	cv::VideoCapture stream1;
-	int primaryStream;
-
 	HANDLE port;
 	char * portName;
 	int baudRate;
 
-	void search(cv::Mat,cv::Mat &);//searchs a frame for targets using TargetingController
-	void search();//uses primaryStream stream
-
-	void display(std::string windowName, cv::Mat){imshow(windowName, frame);}
-
 	bool updatePosition();
 	bool initPosition();
 
-	TurretController();
+public:
 
-	HANDLE openPort(const char * portName, unsigned int baudRate);
+	TurretController();
+	
 };
 
 
+//the system controlling class
+class Zeus
+{
+	bool killTarget();
+
+	TargetingController targeting;
+	TurretController turret;	
+	
+	cv::VideoCapture stream;
+
+public:
+	char key;//for getting user input
+
+	int begin();
+	int run();
+
+	Zeus(){}
+};
 
 
 

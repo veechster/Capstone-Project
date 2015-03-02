@@ -67,6 +67,7 @@ void Tools::enabledebugging()
 	else
 		customDebuggingMenu();
 }
+
 void Tools::disabledebugging()
 {
 	debuggingmode = false;
