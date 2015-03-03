@@ -53,18 +53,24 @@ int Zeus::run()
 
 			std::cout<<"Target Detected.\n";
 
+			key = 0;
 			key = cvWaitKey(250);//wait for cancellation command?
 			
-			std::cout<<"Moving to Eliminate Target.\n";
+			std::cout<<"Moving to Eliminate. Press 'i' to ignore the target.\n";
 
 			key = cvWaitKey(250);
 
-			if (char(key) == 100)//If you hit ESC nothing will happen
-				std::cout<<"Kill cancelled.\n";
+			if (char(key) == 'i')//If you hit ESC nothing will happen
+				std::cout<<"Target Ignored.\n";
 			else
 			{
-				if(killTarget())
+				rVal=killTarget();
+				if(rVal==0)
 					std::cout<<"Target Eliminated.\n";
+				else if(rVal==2)
+					std::cout<<"Target Ignored.\n";
+				else if(rVal==3)
+					std::cout<<"Kill Cancelled by User.\n";
 				else
 					std::cout<<"Target Lost.\n"; 
 				
@@ -89,7 +95,7 @@ int Zeus::run()
 
 
 
-bool Zeus::killTarget()
+int Zeus::killTarget()
 {
 	turret.targetPosition = targeting.getBestTarget();
 
@@ -97,33 +103,39 @@ bool Zeus::killTarget()
 	if(turret.targetPosition[0] + 15 >= FRAME_WIDTH/2 && turret.targetPosition[0] - 15 <= FRAME_WIDTH/2 &&
 		turret.targetPosition[1] + 15 >= FRAME_HEIGHT/2 && turret.targetPosition[1] - 15 <= FRAME_HEIGHT/2)
 	{
-		std::cout<<"Firing.";
+		std::cout<<"Firing.\n Press any key to cancel...\n";
 
-		//turn on laser (
+		key = 0;
+		key = cvWaitKey(250);
 
-		for(int i=0;i<120;i++)
+		//turn on laser
+
+		//leave laser on for 60 frames at 60 frames per sec (1000/60) : assuming all other steps take 0 time : Sleep(1000/60)
+		for(int i=0;i<60;i++)
 		{
+			if(key != 0)
+				return 3;//user cancelled firing
 			stream.read(frame);
 			targeting.processFrame(frame,frame);
 			imshow("Camera_Output", frame);
-			cvWaitKey(1);
-			Sleep(2000/60);//30fps (assume other steps take about half the time)
+			key = 0;
+			key = cvWaitKey(1000/60);
 		}
 
 		//turn off laser
 
-		system("pause");
+		system("pause");///////////////////////////////////////debugging line///////////////////////////////////////////////////////////////////////
 
 		turret.updatePosition();
 
-		return true;
+		return 0;
 	}
 
 	if(turret.targetPosition[0]==-1)
 	{
 		counter++;
 		if(counter > ZEUS_PATIENCE)//how many frames to reaquire
-			return false;
+			return -41;
 	}
 	else
 	{
@@ -141,15 +153,22 @@ bool Zeus::killTarget()
 		if(turret.targetPosition[1] < FRAME_HEIGHT/2)
 			turret.moveUp(50);
 	}
-	Sleep(250);
-	
+
 	stream.read(frame);
 	targeting.processFrame(frame,frame);
 	imshow("Camera_Output", frame);
 	key = 0;
-	key = cvWaitKey(30);
+	key = cvWaitKey(250);
 	if(key != 0)
-		onKey();
+	{
+		if(key=='i')
+		{
+			//SET TARGET AS IGNORED?//////////////////////////////////////////////////////////////////////////////////////
+			return 2;
+		}
+		if(onKey()==1)
+			return 1;
+	}
 
 	return killTarget();
 }
@@ -160,18 +179,21 @@ bool Zeus::killTarget()
 
 int Zeus::onKey()
 {
-	if (char(key) == 27)
-		return 1;//If you hit ESC key loop will break.
-	else if (char(key) == 100)//enable debugging mode
+	if (char(key) == 'ESC')//27
+		return 1;//If you hit "ESC", program will close.
+	else if (char(key) == 'd')//enable debugging mode
 	{ 
 		if(!targeting.debuggingModeActive())
 			targeting.enabledebugging();
 		else
 			targeting.disabledebugging(); 
 	}
-	else if (char(key) == 99)//open command prompt
+	else if (char(key) == 'c')//open command prompt
 	{
-		system("pause");
+		system("pause");///////////////////////////////////////debugging line///////////////////////////////////////////////////////////////////////
+
+
+		//use waitkey for all input (y/n commands)
 
 			//show
 			//target list
@@ -180,7 +202,6 @@ int Zeus::onKey()
 
 			//change
 			//detection method
-			//mode//search//s&d//kill a target//kill all targets
 
 			//kill a target
 
@@ -191,12 +212,12 @@ int Zeus::onKey()
 			//exit
 
 	}
-	else if(char(key) == 104)//help menu
+	else if(char(key) == 'h')//help menu
 	{
 		std::cout<<"\n  HELP:  \n---------\n";
-		std::cout<<"Enter 'ESC' to exit program\n";
-		std::cout<<"Enter 'd' to open real time debugging\n";
-		std::cout<<"Enter 'c' to open the cmd prompt system\n";
+		std::cout<<"Enter 'ESC' to exit program.\n";
+		std::cout<<"Enter 'd' to open real time debugging.\n";
+		std::cout<<"Enter 'c' to open the command prompt.\n";
 	}
 
 	return 0;

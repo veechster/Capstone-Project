@@ -61,11 +61,12 @@ class Target
 
 	cv::Vec3i position;//(x,y,r) where r is radius
 	cv::Vec2s orientation;//keeps track of the turret position
+	std::string name;
 	long unsigned lastSeen;//last "time" the target was updated
 	unsigned timesSeen;//number of times this target has been seen
 public:
-	Target(){position[0]=position[1]=position[2]=0;orientation[0]=orientation[1]=0;}
-	Target(short a, short b, int x, int y, int r,  long unsigned time,std::string c){orientation[0]=a,orientation[1]=b,position[0]=x,position[1]=y,position[2]=r,lastSeen=time;}
+	Target(){position[0]=position[1]=position[2]=0;orientation[0]=orientation[1]=0;name="target";}
+	Target(short a, short b, int x, int y, int r,  long unsigned time,std::string c){orientation[0]=a,orientation[1]=b,position[0]=x,position[1]=y,position[2]=r,lastSeen=time;name=c;}
 	void location(short&,short&,int&,int&,int&);//returns the last reported position of this target
 	//~Target(){}
 };
@@ -161,8 +162,6 @@ class TurretController
 {
 	friend class Zeus;
 
-	cv::Mat frame;
-
 	unsigned short positionX;
 	unsigned short positionY;
 	unsigned short prevPositionX;
@@ -203,8 +202,9 @@ class Zeus
 	cv::Mat frame;
 
 	short counter;
+	int rVal;
 
-	bool killTarget();
+	int killTarget();
 
 	int onKey();
 
