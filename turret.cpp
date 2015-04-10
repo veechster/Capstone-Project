@@ -1,191 +1,128 @@
+/*
+turret.cpp
+
+contains the function definitions for the turret class
+*/
+
+
+
 #ifndef TURRET_CPP
 #define TURRET_CPP
 
 #include "header.h"
 
-TurretController::TurretController()
+//moves the turret left by amt
+int TurretController::moveLeft(short amt)
 {
-	lastMove = targeting.clock.getTime();
-
-	mode = 0;
-
-	primaryStream = 0;
-
-}
-	
-void TurretController::killAll()
-{
-	while (targeting.targets.numCurrentTargets()>0)
-	{
-		temp = targeting.targets.getLastTarget();
-		if(!killTarget(temp))//if there was a problem, remove it anyway.
-			targeting.targets.removeTarget(temp);
-	}
-}
-
-bool TurretController::killTarget(Target enemy)
-{
-	//check target to see if it makes sense
-
-	//align turret of course
-	
-	stream.read(frame);
-	
-	//is enemy on frame?
-
-	//use temp and frame to find/identify this target.
-	
-	//further align turret
-	
-	//fire until destroyed (or key press?)
-	
-	targeting.targets.removeTarget(enemy);
-
-	return true;
-}
-
-bool TurretController::killTarget(std::string name)
-{
-	return killTarget(targeting.targets.getTarget(name));
-}
-
-void TurretController::search(cv::Mat frame,cv::Mat & output)
-{
-	//pre process frame and if mode 1 and targets found, kill them and return.
-	if(targeting.processFrame(position,frame,output) && mode == 1)
-	{
-		killTarget(targeting.targets.getLastTarget());//as of right now, will only kill 1 target, even if multiple are found
-		return;
-	}
-	
-	if(targeting.clock.getTime()%5==0)//if on a fifth clock, move turret
-	{
-		//if prevpos == end pos prompt user?
-
-		//check end pos for boundries. if too far right, go up and work the way right, set curr pos
-	}
-
-
-
-	//prev turret pos = turret pos;
-	return;
-}
-
-void TurretController::search()
-{
-	if(primaryStream==0)
-		stream.read(frame);
-	else
-		stream1.read(frame);
-
-	search(frame,frame);
-	return;
-}
-
-void TurretController::reset(bool command)
-{
-	if(command==0)
-		targeting.targets.clean();
-	else
-		killAll();
-
-	//move turret to start position, set curr pos.
-
-	return;
-}
-
-bool TurretController::moveLeft(short amt)
-{
-	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return false; }
+	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return -11; }
 	if(tempPosition-amt > TURRET_START_POSITION_X)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition-amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 0, tempPosition-amt) ){ return -11; }
+		return 0;
 	}
 	else 
-		if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return false; }
-	return true;
+	{
+		if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return -11; }
+		return -23;
+	}
 }
 
-bool TurretController::moveRight(short amt)
+//moves the turret right by amt
+int TurretController::moveRight(short amt)
 {
-	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return false; }
+	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return -11; }
 	if(tempPosition+amt < TURRET_END_POSITION_X)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition+amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 0, tempPosition+amt) ){ return -11; }
+		return 0;
 	}
 	else 
+	{
 		if ( ! maestroSetTarget(port, 0, TURRET_END_POSITION_X) ){ return false; }
-	return true;
+		return -23;
+	}
 }
 
-bool TurretController::moveUp(short amt)
+//moves the turret up by amt
+int TurretController::moveUp(short amt)
 {
-	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return false; }
+	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return -11; }
 	if(tempPosition+amt < TURRET_END_POSITION_Y)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition+amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 1, tempPosition+amt) ){ return -11; }
+		return 0;
 	}
 	else 
-		if ( ! maestroSetTarget(port, 0, TURRET_END_POSITION_Y) ){ return false; }
-	return true;
-}
-
-bool TurretController::moveDown(short amt)
-{
-	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return false; }
-	if(tempPosition-amt > TURRET_END_POSITION_Y)
 	{
-		if ( ! maestroSetTarget(port, 0, tempPosition-amt) ){ return false; }
+		if ( ! maestroSetTarget(port, 1, TURRET_END_POSITION_Y) ){ return -11; }
+		return -23;
 	}
-	else 
-		if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_Y) ){ return false; }
-	return true;
 }
 
-bool TurretController::updatePosition()
+//moves the turret down by amt
+int TurretController::moveDown(short amt)
 {
-	//get maestro current position:
-	if ( ! maestroGetPosition(port, 0, &prevPositionX) ){ return false; }
-	if ( ! maestroGetPosition(port, 1, &prevPositionY) ){ return false; }
+	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return -11; }
+	if(tempPosition-amt > TURRET_START_POSITION_Y)
+	{
+		if ( ! maestroSetTarget(port, 1, tempPosition-amt) ){ return -11; }
+		return 0;
+	}
+	else 
+	{
+		if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return -11; }
+		return -23;
+	}
+}
 
+//updates the turret position (sweeping)
+int TurretController::updatePosition()
+{
 	if(prevPositionX == TURRET_END_POSITION_X)
 	{
 		positionX = TURRET_START_POSITION_X;
-		positionY = prevPositionY + 250;
+		positionY = prevPositionY + TURRET_MOVE_AMT_Y;
+
+		Sleep(500);
 		
 		if(positionY > TURRET_END_POSITION_Y)
 		{
-			std::cout<<"END OF SWEEP";
-			//system("pause");
-			//BEGIN NEW SWEEP ------ user input to determine course of action ------ bound by time
-			positionY = TURRET_START_POSITION_Y;//temporary?
+			std::cout<<"End of sweep.\n";
+			Sleep(500);
+			std::cout<<"Beginning new sweep.\n";
+			positionY = TURRET_START_POSITION_Y;
 		}
 	}
 	else
 	{
-		positionX = prevPositionX += 250;
+		positionX = prevPositionX += TURRET_MOVE_AMT_X;
 		positionY = prevPositionY;
 	}
 
-	//set new turret position to continue sweep:
-	if ( ! maestroSetTarget(port, 0, positionX) ){ return false; }
-	if ( ! maestroSetTarget(port, 1, positionY) ){ return false; }
+	//set new turret position to continue sweep
+	if ( ! maestroSetTarget(port, 0, positionX) ){ return -11; }
+	if ( ! maestroSetTarget(port, 1, positionY) ){ return -11; }
 
-	position[0] = positionX;
-	position[1] = positionY;
+	prevPositionX = positionX;
+	prevPositionY = positionY;
 
-
-	return true;
+	return 0;
 }
 
-bool TurretController::initPosition()
+//initialize the turret position
+int TurretController::initPosition()
 {
-	if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return false; }
-	if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return false; }
-	return true;
+	if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return -11; }
+	if ( ! maestroSetTarget(port, 1, TURRET_START_POSITION_Y) ){ return -11; }
+
+	prevPositionX = TURRET_START_POSITION_X;
+	prevPositionY = TURRET_START_POSITION_Y;
+
+	return 0;
 }
 
 
+//following functions were written by polulu:
 
 /** Implements the Maestro's Get Position serial command.
  * channel: Channel number from 0 to 23

@@ -1,3 +1,11 @@
+/*
+tools.cpp
+
+contains the function definitions for the tools class
+*/
+
+
+
 #ifndef TOOLS_CPP
 #define TOOLS_CPP
 
@@ -9,12 +17,16 @@ Tools::Tools()
 	debuggingmode = false;
 	detectionMethod = 0;
 	//initalize the filtering values
-	H_MIN = 70;//0;
-	H_MAX = 90;//256;
-	S_MIN = 40;//0;
-	S_MAX = 150;//256;
-	V_MIN = 95;//0;
-	V_MAX = 216;//256;
+	//green = 70,90,40,150,110,256
+	//purple = 120,135,45,130,90,256
+	//yellow = 20,65,70,256,120,256
+	H_MIN = 120;//0;
+	H_MAX = 135;//256;
+	S_MIN = 45;//0;
+	S_MAX = 130;//256;
+	V_MIN = 80;//0;
+	V_MAX = 256;//256
+	//default purple
 	//for houghcircles debugging
 	dp = 2;
 	min_dist = 100;
@@ -38,6 +50,7 @@ void Tools::crosshair(cv::Mat &frame, int x, int y, int r, cv::Vec3i colour,std:
 	cv::putText(frame,targetName,cv::Point(x+2,y+12),cv::FONT_HERSHEY_SIMPLEX,0.35,cv::Scalar(200,200,200),1);
 }
 
+//enables the debugging menu
 void Tools::enabledebugging()
 {
 	debuggingmode = true;
@@ -67,6 +80,8 @@ void Tools::enabledebugging()
 	else
 		customDebuggingMenu();
 }
+
+//disbales the debugging menu
 void Tools::disabledebugging()
 {
 	debuggingmode = false;
@@ -84,6 +99,7 @@ void Tools::disabledebugging()
 		exitCustomDebuggingMenu();
 }
 
+//searchs a frame for targets
 void Tools::searchFrame(cv::Mat frame)
 {
 	if(detectionMethod==0)

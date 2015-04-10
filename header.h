@@ -1,3 +1,11 @@
+/*
+header.h
+
+Contains all the class definitions and external function definitions
+*/
+
+
+
 #ifndef HEADER_H
 #define HEADER_H
 
@@ -9,17 +17,28 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
+//DEFINE statements for constants used throughout the program
 //width and height of playback screen.
 #define FRAME_WIDTH 640
 #define FRAME_HEIGHT 480
 
-#define LASER_POSITION_X FRAME_WIDTH/2-25
-#define LASER_POSITION_Y FRAME_HEIGHT/2-25
+#define LASER_POSITION_X FRAME_WIDTH/2+2
+#define LASER_POSITION_Y FRAME_HEIGHT/2-2
+
+#define TARGET_CENTER_DEVIATION 10
 
 #define TURRET_START_POSITION_X 4000
 #define TURRET_START_POSITION_Y 4600
 #define TURRET_END_POSITION_X 8000
 #define TURRET_END_POSITION_Y 6500
+
+#define TURRET_MOVE_AMT_X 100
+#define TURRET_MOVE_AMT_Y 500
+#define TURRET_MOVE_FREQ 4
+
+#define ZEUS_PATIENCE 10
+
+
 
 
 
@@ -40,61 +59,27 @@ public:
 
 
 
+
+
 /***
 ADT: Target
 Purpose: provides a way of keeping track of a targets location and previous 10 locations 
 Notes: this class will be used to keep track of an individual target and information about it
 ***/
-//MAY HAVE TO CHANGE STORAGE TYPE TO FLOAT
-//MAY HAVE TO CHANGE CLASS INTERFACES
 class Target
 {
-	friend class TargetList;
+	friend class TargettingController;
 
-	cv::Vec3i position[10];//array of last 10 positions (x,y,r) where r is radius
-	cv::Vec2s orientation[10];//keeps track of the turret position
-	int cursor;//hold the position of the NEXT place in the array of positions to be used.
-	bool full;//hold whether or not position array is fully used.
-	std::string name;//holds the name of the target
+	cv::Vec3i position;//(x,y,r) where r is radius
+	cv::Vec2s orientation;//keeps track of the turret position
+	std::string name;
 	long unsigned lastSeen;//last "time" the target was updated
 	unsigned timesSeen;//number of times this target has been seen
 public:
-	Target(){position[0][0]=position[0][1]=position[0][2]=0;orientation[0][0]=orientation[0][1]=0;cursor=0;full=false;}
-	Target(short a, short b, int x, int y, int r,  long unsigned time,std::string c){addSighting(a,b,x,y,r,time);cursor=1;name=c;lastSeen=time;full=false;}
-	void addSighting(short a, short b, int x, int y, int r, long unsigned time){orientation[cursor][0]=a;orientation[cursor][1]=b;position[cursor][0]=x;position[cursor][1]=y;position[cursor][2]=r;cursor=(cursor+1)%10;lastSeen=time;if(cursor==0)full=true;}//adds a position to the array of past positions
-	const bool isTarget(short,short,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target
-	bool isTarget_add(short,short,int,int,int,long unsigned);//alogirthm for identifying weather this set of points belong to this target, adds if it is
+	Target(){position[0]=position[1]=position[2]=0;orientation[0]=orientation[1]=0;name="target";}
+	Target(short a, short b, int x, int y, int r,  long unsigned time,std::string c){orientation[0]=a,orientation[1]=b,position[0]=x,position[1]=y,position[2]=r,lastSeen=time;name=c;}
 	void location(short&,short&,int&,int&,int&);//returns the last reported position of this target
 	//~Target(){}
-};
-
-
-
-/***
-ADT: TargetList
-Purpose: keep track of several targets (allows differentiation between targets)
-Notes:
-***/
-class TargetList
-{
-	friend class TargetingController;
-
-	std::vector<Target*> list;//stores all current targets
-	int foundTargets;//total targets found 
-	Target* temp;
-public:
-	TargetList(){foundTargets=0;}
-
-	void clean();//deletes everything
-	//void add(Target);//adds a target  // removed?
-	void add(short,short,int,int,int,std::string,long unsigned);//adds a target
-	Target getLastTarget();//gets the most recently inserted target
-	Target getTarget(std::string);//gets a specific target
-	bool removeTarget(Target);//removes a specifc target
-	Target search(short,short,int,int,int,long unsigned);//looks for a target (current time)
-	int numCurrentTargets(){return list.size();}//returns size of list (num)
-	std::string getFoundTargets(){return "target " + std::to_string(foundTargets);}//returns total number of found targets (x) in string form: "target x"
-
 };
 
 
@@ -109,6 +94,7 @@ Notes: any drawing and so-forth functions for ProgramData will be contained in t
 class Tools
 {
 	friend class TargetingController;
+	friend class Zeus;
 
 	int detectionMethod;//detection method (0=HSV image, 1=for IR targeting, anything else is alternate method)
 	void searchFrame(cv::Mat);//searchs frame, stores identified targets in "circles"
@@ -142,8 +128,6 @@ public:
 	Tools();
 	void changeDetectionMethod(int i){detectionMethod=i;}
 	int getDetectionMethod(){return detectionMethod;}
-
-
 };
 
 
@@ -157,18 +141,20 @@ Notes:
 ***/
 class TargetingController
 {
-	friend class TurretController;
+	friend class Zeus;
 
-	TargetList targets;//list of all current targets
-	bool processFrame(cv::Vec2s,cv::Mat,cv::Mat &);//process a frame for targets and add them
-	const cv::vector<cv::Vec3f> processFrame(cv::Mat);//process a frame for targets and return them.
-
-public:
-	char key;//for getting user input
-
-	Ptime clock;//for keeping track of program time
 	Tools control;//tools to control the tracking, etc
 
+	cv::vector<Target *> targets;//list of all current targets
+	bool processFrame(cv::Mat,cv::Mat &);//process a frame for targets and mark them
+	const cv::vector<cv::Vec3f> processFrame(cv::Mat);//process a frame for targets and do not mark them.
+
+	//remove out of bounds targets.
+
+public:
+	Ptime clock;//for keeping track of program time
+
+	cv::Vec3f getBestTarget();
 
 	void enabledebugging(){control.enabledebugging();}
 	void disabledebugging(){control.disabledebugging();}
@@ -183,62 +169,87 @@ public:
 
 /***
 ADT: Turret Controller
-Purpose: this function controls the target aquisition and elimination functions, controls turret orientation and function.
+Purpose: this class controls turret orientation and the laser.
 Notes: 
 ***/
 class TurretController
 {
-	cv::Mat frame;
-	Target temp;
+	friend class Zeus;
 
 	unsigned short positionX;
 	unsigned short positionY;
-	long unsigned lastMove;
 	unsigned short prevPositionX;
 	unsigned short prevPositionY;
 	unsigned short tempPosition;
 
-	cv::Vec2s position;
-
-	int mode;//0=search, 1=search and destroy, 3=killall; 2=kill (requires more input or just kills the most recent target.)
-	
-	void killAll();
-	bool killTarget(Target);
-	bool killTarget(std::string);
-
-	//move left, right, down, up, return to prev position, output current position, etc.
-	bool moveLeft(short);
-	bool moveRight(short);
-	bool moveUp(short);
-	bool moveDown(short);
+	cv::Vec3f targetPosition;
 
 	BOOL maestroGetPosition(HANDLE port, unsigned char channel, unsigned short * position);
 
 	BOOL maestroSetTarget(HANDLE port, unsigned char channel, unsigned short target);
 
-public:
-	TargetingController targeting;
-	cv::VideoCapture stream;
-	cv::VideoCapture stream1;
-	int primaryStream;
+	HANDLE openPort(const char * portName, unsigned int baudRate);	
+
+	//move left, right, down, up, return to prev position, output current position, etc.
+	int moveLeft(short);
+	int moveRight(short);
+	int moveUp(short);
+	int moveDown(short);
+
+	BOOL laserOn(){return maestroSetTarget(port,5,6001);}
+	BOOL laserOff(){return maestroSetTarget(port,5,0);}
 
 	HANDLE port;
 	char * portName;
 	int baudRate;
 
-	void search(cv::Mat,cv::Mat &);//searchs a frame for targets using TargetingController
-	void search();//uses primaryStream stream
-	void reset(bool);//resets the system. argument is a command (0 = clear targets, 1 = kill all)
-	bool changeMode(int i){if (i<4 && i>0){mode=i;} else {return false;} return true;}
-	//0=search, 1=search and destroy, 3=killall; 2=kill (requires more input or just kills the most recent target.)
+	int updatePosition();
+	int initPosition();
 
-	bool updatePosition();
-	bool initPosition();
+public:
 
-	TurretController();
-
-	HANDLE openPort(const char * portName, unsigned int baudRate);
+	TurretController(){}
+	
 };
+
+
+
+
+
+/***
+ADT: Zeus
+Purpose: the overlord class, contains all the system functionality.
+Notes: 
+***/
+class Zeus
+{
+	cv::Mat frame;
+
+	short counter;
+	int rVal;
+
+	int killTarget();
+
+	int track();
+
+	int onKey();
+
+	TargetingController targeting;
+	TurretController turret;	
+	
+	cv::VideoCapture stream;
+
+public:
+	char key;//for getting user input
+
+	int begin();
+	int run();
+
+	Zeus(){}
+};
+
+
+
 
 
 extern cv::vector<cv::Vec3f> customDetectionMethod(cv::Mat);
