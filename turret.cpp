@@ -1,8 +1,17 @@
+/*
+turret.cpp
+
+contains the function definitions for the turret class
+*/
+
+
+
 #ifndef TURRET_CPP
 #define TURRET_CPP
 
 #include "header.h"
 
+//moves the turret left by amt
 int TurretController::moveLeft(short amt)
 {
 	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return -11; }
@@ -18,6 +27,7 @@ int TurretController::moveLeft(short amt)
 	}
 }
 
+//moves the turret right by amt
 int TurretController::moveRight(short amt)
 {
 	if ( ! maestroGetPosition(port, 0, &tempPosition) ){ return -11; }
@@ -33,6 +43,7 @@ int TurretController::moveRight(short amt)
 	}
 }
 
+//moves the turret up by amt
 int TurretController::moveUp(short amt)
 {
 	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return -11; }
@@ -48,6 +59,7 @@ int TurretController::moveUp(short amt)
 	}
 }
 
+//moves the turret down by amt
 int TurretController::moveDown(short amt)
 {
 	if ( ! maestroGetPosition(port, 1, &tempPosition) ){ return -11; }
@@ -63,17 +75,20 @@ int TurretController::moveDown(short amt)
 	}
 }
 
+//updates the turret position (sweeping)
 int TurretController::updatePosition()
 {
 	if(prevPositionX == TURRET_END_POSITION_X)
 	{
 		positionX = TURRET_START_POSITION_X;
 		positionY = prevPositionY + TURRET_MOVE_AMT_Y;
+
+		Sleep(500);
 		
 		if(positionY > TURRET_END_POSITION_Y)
 		{
 			std::cout<<"End of sweep.\n";
-			Sleep(1000);
+			Sleep(500);
 			std::cout<<"Beginning new sweep.\n";
 			positionY = TURRET_START_POSITION_Y;
 		}
@@ -94,6 +109,7 @@ int TurretController::updatePosition()
 	return 0;
 }
 
+//initialize the turret position
 int TurretController::initPosition()
 {
 	if ( ! maestroSetTarget(port, 0, TURRET_START_POSITION_X) ){ return -11; }

@@ -1,3 +1,11 @@
+/*
+targets.cpp
+
+contains the function definitions for the targets class
+*/
+
+
+
 #ifndef TARGETS_CPP
 #define TARGETS_CPP
 
@@ -27,7 +35,7 @@ bool TargetingController::processFrame(cv::Mat frame,cv::Mat& output)
 
 	cv::circle(output,cv::Point(LASER_POSITION_X,LASER_POSITION_Y),5,cv::Scalar(150,0,200),2);//where the laser is aimed
 
-	cv::circle(output,cv::Point(FRAME_WIDTH/2,FRAME_HEIGHT/2),30,cv::Scalar(75,75,75),1);//the kill circle
+	cv::circle(output,cv::Point(FRAME_WIDTH/2,FRAME_HEIGHT/2),25,cv::Scalar(75,75,75),1);//the kill circle
 	
 		//identify each target on screen
 		//draws targets on each found target.

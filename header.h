@@ -1,3 +1,11 @@
+/*
+header.h
+
+Contains all the class definitions and external function definitions
+*/
+
+
+
 #ifndef HEADER_H
 #define HEADER_H
 
@@ -9,12 +17,15 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
+//DEFINE statements for constants used throughout the program
 //width and height of playback screen.
 #define FRAME_WIDTH 640
 #define FRAME_HEIGHT 480
 
-#define LASER_POSITION_X FRAME_WIDTH/2+18
-#define LASER_POSITION_Y FRAME_HEIGHT/2+12
+#define LASER_POSITION_X FRAME_WIDTH/2+2
+#define LASER_POSITION_Y FRAME_HEIGHT/2-2
+
+#define TARGET_CENTER_DEVIATION 10
 
 #define TURRET_START_POSITION_X 4000
 #define TURRET_START_POSITION_Y 4600
@@ -22,7 +33,7 @@
 #define TURRET_END_POSITION_Y 6500
 
 #define TURRET_MOVE_AMT_X 100
-#define TURRET_MOVE_AMT_Y 300
+#define TURRET_MOVE_AMT_Y 500
 #define TURRET_MOVE_FREQ 4
 
 #define ZEUS_PATIENCE 10
@@ -83,6 +94,7 @@ Notes: any drawing and so-forth functions for ProgramData will be contained in t
 class Tools
 {
 	friend class TargetingController;
+	friend class Zeus;
 
 	int detectionMethod;//detection method (0=HSV image, 1=for IR targeting, anything else is alternate method)
 	void searchFrame(cv::Mat);//searchs frame, stores identified targets in "circles"
@@ -137,6 +149,8 @@ class TargetingController
 	bool processFrame(cv::Mat,cv::Mat &);//process a frame for targets and mark them
 	const cv::vector<cv::Vec3f> processFrame(cv::Mat);//process a frame for targets and do not mark them.
 
+	//remove out of bounds targets.
+
 public:
 	Ptime clock;//for keeping track of program time
 
@@ -155,7 +169,7 @@ public:
 
 /***
 ADT: Turret Controller
-Purpose: this function controls the target aquisition and elimination functions, controls turret orientation and function.
+Purpose: this class controls turret orientation and the laser.
 Notes: 
 ***/
 class TurretController
@@ -182,6 +196,9 @@ class TurretController
 	int moveUp(short);
 	int moveDown(short);
 
+	BOOL laserOn(){return maestroSetTarget(port,5,6001);}
+	BOOL laserOff(){return maestroSetTarget(port,5,0);}
+
 	HANDLE port;
 	char * portName;
 	int baudRate;
@@ -196,7 +213,14 @@ public:
 };
 
 
-//the system controlling class
+
+
+
+/***
+ADT: Zeus
+Purpose: the overlord class, contains all the system functionality.
+Notes: 
+***/
 class Zeus
 {
 	cv::Mat frame;
@@ -205,6 +229,8 @@ class Zeus
 	int rVal;
 
 	int killTarget();
+
+	int track();
 
 	int onKey();
 
@@ -221,6 +247,7 @@ public:
 
 	Zeus(){}
 };
+
 
 
 

@@ -1,3 +1,11 @@
+/*
+custom.cpp
+
+contains the functions for the custom detection algorithms
+*/
+
+
+
 #ifndef CUSTOM_CPP
 #define CUSTOM_CPP
 
